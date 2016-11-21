@@ -1,0 +1,44 @@
+resources:
+- name: version
+  type: semver
+  source:
+    driver: git
+    uri: git@github.com:davecramer/testversion.git
+    branch: master
+    file: version
+
+- name: testversion
+  type: git
+  source:
+    branch: master
+    uri: git@github.com:davecramer/testversion.git
+    
+- name: dev-work
+  type: time
+  source: {interval: 15m}
+
+jobs:
+- name: test_build
+  plan:
+  - aggregate: 
+      - get: dev-work
+        trigger: true
+      - get: version
+      - get: testversion
+  - task: commit-to-repo
+    file: fake-product/dummy
+    
+
+- name: buildtestversion
+  plan: 
+  - aggregate: 
+    - get: testversion
+      trigger: true
+    - get: version
+    - put: version
+      params: 
+          file: 'version/version'
+      
+
+        
+    
